@@ -80,7 +80,7 @@ st.session_state['option'] = option
 
 
 # Input box for chromatic number
-k = st.sidebar.number_input("Chromatic Number", min_value=1, max_value=10, value=3)
+k = st.sidebar.number_input("Chromatic Number", min_value=1, max_value=4, value=2)
 st.session_state['k'] = k
 
 # Input box for number of nodes
