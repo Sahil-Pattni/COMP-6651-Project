@@ -1,6 +1,8 @@
 import networkx as nx
 
 
+from collections import defaultdict
+
 def fit_first(G: nx.Graph) -> nx.Graph:
     """
     Apply the fit-first algorithm to a graph.
@@ -17,16 +19,16 @@ def fit_first(G: nx.Graph) -> nx.Graph:
         Colored graph.
     """
     nodes = list(G.nodes())
+    # Default color is -1
+    neighbor_colors = defaultdict(lambda: -1)
+    available_colors = list(range(len(G)))
     for node in nodes:
         # Find the colors of neighboring nodes
-        neighbor_colors = set(
-            G.nodes[n]['group'] for n in G.neighbors(node) if 'group' in G.nodes[n]
-            )
-        
+        neighbor_colors = {G.nodes[n].get('group', -1) for n in G.neighbors(node)}
+
         # Choose the smallest unused color
-        for color in range(len(G)):
-            if color not in neighbor_colors:
-                G.nodes[node]['group'] = color
-                break
-    
+        color = min(available_colors, key=lambda c: c not in neighbor_colors)
+        G.nodes[node]['group'] = color
+        available_colors.remove(color)
+
     return G
