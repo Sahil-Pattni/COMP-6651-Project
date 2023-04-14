@@ -24,7 +24,8 @@ def generate_k_colorable_graph(k:int, n:int, p:float):
     # Create a graph with n nodes
     G = nx.Graph()
     for i in range(n):
-        G.add_node(i, group=i % k, label=f'Node {i}')
+        # NOTE: Add `group=i % k` to color the nodes
+        G.add_node(i, label=f'Node {i}')
 
     # Create edges between nodes in different subsets
     for i in range(n):

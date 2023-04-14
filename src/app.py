@@ -3,6 +3,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 import networkx as nx
 from pyvis.network import Network
+from coloring.fit_first import fit_first
 from utils import generate_k_colorable_graph, generate_pyvis_graph
 import numpy as np
 # %%
@@ -22,6 +23,9 @@ if 'step' not in st.session_state:
     st.session_state['step'] = 1
 if 'max_nodes' not in st.session_state:
         st.session_state['max_nodes'] = np.inf
+# Set default option
+if 'option' not in st.session_state:
+    st.session_state['option'] = 'FirstFit'
 
 for char in ['k', 'n', 'e', 'p']:
     if char not in st.session_state:
@@ -47,6 +51,13 @@ def show_graph(step: int) -> None:
         st.write(f'Step {step:,} | Nodes: {nodes} | Max: {len(st.session_state["G"].nodes)}')
         # Generate subgraph
         _G = st.session_state['G'].subgraph(nodes)
+        # Generate appropriate colorings
+        if st.session_state['option'] == 'FirstFit':
+            _G = fit_first(_G)
+        elif st.session_state['option'] == 'CBIP':
+            # TODO: Implement CBIP
+            pass
+
         # Generate pyvis graph
         PG = generate_pyvis_graph(_G, st.session_state['layout'])
         # Save graph to HTML
@@ -65,6 +76,7 @@ option = st.sidebar.selectbox(
     "Online Coloring Method",
     ("FirstFit", "CBIP")
 )
+st.session_state['option'] = option
 
 
 # Input box for chromatic number
@@ -83,23 +95,6 @@ st.session_state['e'] = e
 p = st.sidebar.number_input("Probability of edge creation", min_value=0.0, max_value=1.0, value=0.7)
 st.session_state['p'] = p
 
-
-# --- MAIN --- #
-
-# Button to go to next step
-if st.session_state['step'] <= st.session_state['max_nodes']:
-    if st.button("Next Step"):
-        # Increment step
-        st.session_state['step'] += 1
-        print(f'Current step: {st.session_state["step"]}')
-        show_graph(st.session_state['step'])
-else:
-    st.write("Done!")
-    # Clear container
-    container = container.empty()
-    # Show complete graph
-    show_graph(st.session_state['max_nodes'])
-
 # Button to generate graph
 if st.sidebar.button("Generate Graph"):
     # Clear container
@@ -117,6 +112,23 @@ if st.sidebar.button("Generate Graph"):
     st.session_state['step'] = 1
     # Show complete graph
     show_graph(st.session_state['max_nodes'])
+
+
+# --- MAIN --- #
+# Button to go to next step
+if st.session_state['step'] <= st.session_state['max_nodes']:
+    if st.button("Next Step"):
+        # Increment step
+        st.session_state['step'] += 1
+        print(f'Current step: {st.session_state["step"]}')
+        show_graph(st.session_state['step'])
+else:
+    st.write("Done!")
+    # Clear container
+    container = container.empty()
+    # Show complete graph
+    show_graph(st.session_state['max_nodes'])
+
 
 
 # # %%
