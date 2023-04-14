@@ -17,26 +17,30 @@ def generate_k_colorable_graph(k:int, n:int, p:float):
         Probability of edge creation.
     """
     # Partition the nodes into k disjoint subsets
-    subsets = [set() for _ in range(k)]
-    for i in range(n):
-        subsets[i % k].add(i)
-    
+    nodes = np.arange(n)
+    subsets = np.zeros(n, dtype=int)
+    subsets[nodes % k != 0] = 1
+    subsets[nodes % k == 0] = -1
+
     # Create a graph with n nodes
     G = nx.Graph()
     for i in range(n):
-        # NOTE: Add `group=i % k` to color the nodes
         G.add_node(i, label=f'Node {i}')
 
-    # Create edges between nodes in different subsets
-    for i in range(n):
-        for j in range(i + 1, n):
-            # Create an edge with probability p 
-            # if the nodes are in different subsets
-            if i % k != j % k and np.random.random() < p:
-                G.add_edge(i, j)
+    # Compute the pairwise comparisons
+    pairs = np.triu_indices(n, k=1)
+    in_diff_subsets = subsets[pairs[0]] != subsets[pairs[1]]
+    prob = np.random.rand(len(in_diff_subsets))
+    add_edge = prob < p
+    should_add_edge = in_diff_subsets & add_edge
+
+    # Add edges to the graph
+    edges = np.array(pairs).T[should_add_edge]
+    G.add_edges_from(edges)
 
     # Return the graph and the layout
     return G, nx.spring_layout(G, scale=n*15)
+
 
 
 def generate_pyvis_graph(_G: nx.Graph, layout: dict ) -> Network:
