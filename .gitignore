@@ -2,3 +2,4 @@ lib/
 .vscode/
 **/__pycache__/
 html/*.html
+*.feather
