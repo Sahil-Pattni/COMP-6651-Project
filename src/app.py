@@ -1,9 +1,12 @@
 # %%
+from time import sleep, time
 import streamlit as st
 import streamlit.components.v1 as components
+import pandas as pd
 import networkx as nx
 from pyvis.network import Network
 from coloring.fit_first import fit_first
+from coloring.CBIP import cbip
 from utils import generate_k_colorable_graph, generate_pyvis_graph
 import numpy as np
 # %%
@@ -14,15 +17,15 @@ st.set_page_config(
         layout="wide",
 )
 
+
 # --- GLOBAL VARIABLES --- #
 if 'G' not in st.session_state:
     st.session_state['G'] = generate_k_colorable_graph(3, 10, 0.4)
 if 'layout' not in st.session_state:
     st.session_state['layout'] = None
-if 'step' not in st.session_state:
-    st.session_state['step'] = 1
-if 'max_nodes' not in st.session_state:
-        st.session_state['max_nodes'] = np.inf
+if 'df' not in st.session_state:
+    st.session_state['df'] = None
+
 # Set default option
 if 'option' not in st.session_state:
     st.session_state['option'] = 'FirstFit'
@@ -33,37 +36,6 @@ for char in ['k', 'n', 'e', 'p']:
 
 placeholder = st.empty()
 container = placeholder.container()
-
-
-
-def show_graph(step: int) -> None:
-    """
-    Display a subgraph of the current graph.
-
-    Parameters
-    ----------
-    step : int
-        Number of nodes to show.
-    """
-    with container:
-        nodes = range(step+1)
-        # Show step number
-        st.write(f'Step {step:,} | Nodes: {nodes} | Max: {len(st.session_state["G"].nodes)}')
-        # Generate subgraph
-        _G = st.session_state['G'].subgraph(nodes)
-        # # Generate appropriate colorings
-        # if st.session_state['option'] == 'FirstFit':
-        #     _G = fit_first(_G)
-        # elif st.session_state['option'] == 'CBIP':
-        #     # TODO: Implement CBIP
-        #     pass
-
-        # Generate pyvis graph
-        PG = generate_pyvis_graph(_G, st.session_state['layout'])
-        # Save graph to HTML
-        PG.show("html/nx.html")
-        # Display graph
-        components.html(open("html/nx.html", "r").read(), height=750)
 
 
 
@@ -84,12 +56,12 @@ k = st.sidebar.number_input("Chromatic Number", min_value=1, max_value=4, value=
 st.session_state['k'] = k
 
 # Input box for number of nodes
-n = st.sidebar.number_input("Number of vertices", min_value=1, value=50)
+n = st.sidebar.number_input("Number of vertices", min_value=1, value=10)
 st.session_state['n'] = n
 
 # Input box for number of edges
-e = st.sidebar.number_input("Number of edges", min_value=1,value=100)
-st.session_state['e'] = e
+N = st.sidebar.number_input("Number of graphs to generate", min_value=1,value=1)
+st.session_state['N'] = N
 
 # Input box for probability of edge creation
 p = st.sidebar.number_input("Probability of edge creation", min_value=0.0, max_value=1.0, value=0.7)
@@ -97,40 +69,78 @@ st.session_state['p'] = p
 
 # Button to generate graph
 if st.sidebar.button("Generate Graph"):
+    start_time = time()
     # Clear container
     placeholder = st.empty()
     container = placeholder.container()
-    # Generate graph
-    st.session_state['G'], st.session_state['layout'] = generate_k_colorable_graph(
-        st.session_state['k'], 
-        st.session_state['n'],
-        st.session_state['p']
-    )
-    st.session_state['max_nodes'] = n
-    st.write(f'Graph with {n} nodes and {e} edges.')
-    # Reset step
-    st.session_state['step'] = 1
-    # Show complete graph
-    show_graph(st.session_state['max_nodes'])
+    with container:
+        progress_bar = st.sidebar.progress(0)
+        
+        study_data = []
+
+        for i in range(N):
+            # Generate graph
+            G = generate_k_colorable_graph(
+                st.session_state['k'],
+                st.session_state['n'],
+                st.session_state['p']
+            )
+
+            color_fn = fit_first if st.session_state['option'] == 'FirstFit' else cbip
+            
+            # TODO: Fix this part
+            for idx in range(2, st.session_state['n']+1):
+                subgraph = G.subgraph(range(idx))
+                colors = color_fn(subgraph)
+                # Assign colors to graph
+                for node in subgraph.nodes:
+                    G.nodes[node]['group'] = colors[node]
+
+            # Number of unqiue colors used
+            colors = set([subgraph.nodes[x]['group'] for x in subgraph.nodes])
+            num_colors = len(colors)
 
 
-# --- MAIN --- #
-# Button to go to next step
-if st.session_state['step'] <= st.session_state['max_nodes']:
-    if st.button("Next Step"):
-        # Increment step
-        st.session_state['step'] += 1
-        print(f'Current step: {st.session_state["step"]}')
-        show_graph(st.session_state['step'])
-else:
-    st.write("Done!")
-    # Clear container
-    container = container.empty()
-    # Show complete graph
-    show_graph(st.session_state['max_nodes'])
+            # Update competitive ratio
+            ratio = num_colors / k
+            study_data.append((st.session_state['k'], st.session_state['n'], num_colors, ratio, st.session_state['N']))
+            delta = study_data[-1][3] if len(study_data) >= 1 else 0
+            ratios = [x[3] for x in study_data]
 
+            # Update progress bar
+            print(f'Progress: {i}/{N}')
+            progress_bar.progress(i/N)
 
+        # Show metrics
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric(label="Avg. Competitive Ratio", value=f'{np.mean(ratios):,.2f}', delta=delta)
+        with col2:
+            st.metric(label="Colors Used", value=num_colors)
 
+        # Show last result
+        # Generate pyvis graph
+        layout_scale = st.session_state['n'] * 15
+        if k == 2:
+            layout = nx.bipartite_layout(G, nx.bipartite.sets(G)[0], scale=layout_scale)
+        else:
+            layout = nx.multipartite_layout(G, 'group', scale=layout_scale*1.5)
+        PG = generate_pyvis_graph(G, layout)
+        # Save graph to HTML
+        PG.show("html/nx.html")
+        # Display graph
+        components.html(open("html/nx.html", "r").read(), height=750)
+
+        # Show data
+        # Header
+        st.header("Data")
+        # Generate dataframe
+        df = pd.DataFrame(study_data, columns=['k', 'n', 'colors_used', 'ratio', 'N'])
+        # Show dataframe
+        st.dataframe(df)
+
+        end_time = time()
+        st.write(f'Elapsed time: {end_time - start_time:,.3f} second(s)')
 # # %%
 
-# %%
+## %%

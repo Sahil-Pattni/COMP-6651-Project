@@ -19,16 +19,27 @@ def fit_first(G: nx.Graph) -> nx.Graph:
         Colored graph.
     """
     nodes = list(G.nodes())
-    # Default color is -1
-    neighbor_colors = defaultdict(lambda: -1)
-    available_colors = list(range(len(G)))
     for node in nodes:
+        # If node is colored, pass
+        if 'group' in G.nodes[node]:
+            continue
+
+        print(f'Node {node}')
         # Find the colors of neighboring nodes
-        neighbor_colors = {G.nodes[n].get('group', -1) for n in G.neighbors(node)}
-
+        neighbor_colors = set(
+            G.nodes[n]['group'] for n in G.neighbors(node) if 'group' in G.nodes[n]
+            )
+        
         # Choose the smallest unused color
-        color = min(available_colors, key=lambda c: c not in neighbor_colors)
-        G.nodes[node]['group'] = color
-        available_colors.remove(color)
+        for color in range(len(G)):
+            if color not in neighbor_colors:
+                G.nodes[node]['group'] = color
+                print(f'Color chosen: {color}')
+                break
+        
+        print()
 
-    return G
+    # Get colors as dict
+    colors = {i: G.nodes[i]['group'] for i in G.nodes()}
+    
+    return colors

@@ -36,7 +36,7 @@ def generate_k_colorable_graph(k:int, n:int, p:float):
                 G.add_edge(i, j)
 
     # Return the graph and the layout
-    return G, nx.spring_layout(G, scale=n*15)
+    return G
 
 
 
@@ -61,7 +61,6 @@ def generate_pyvis_graph(_G: nx.Graph, layout: dict ) -> Network:
     PG.force_atlas_2based()
     # Disable physics
     PG.toggle_physics(False)
-    print(type(_G))
     # Add nodes
     PG.from_nx(_G)
 
