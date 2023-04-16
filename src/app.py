@@ -88,7 +88,6 @@ if st.sidebar.button("Generate Graph"):
 
             color_fn = fit_first if st.session_state['option'] == 'FirstFit' else cbip
             
-            # TODO: Fix this part
             for idx in range(2, st.session_state['n']+1):
                 subgraph = G.subgraph(range(idx))
                 colors = color_fn(subgraph)

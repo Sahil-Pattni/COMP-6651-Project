@@ -32,25 +32,18 @@ def cbip(G: nx.Graph) -> nx.Graph:
     # Bipartite graph
     partitions =  get_partitions(G)
 
-    print(f'Partitions: {partitions}')
-
     nodes = list(G.nodes())
     available_colors = list(range(len(G)+1))
-    print(available_colors)
 
     for node in nodes:
         # If node is colored, pass
         if 'group' in G.nodes[node]:
             continue
-        
-        print(f'Node: {node}')
 
         opposing_partition = partitions[0] if node in partitions[1] else partitions[1]
 
         # Find minimum color not used by opposing partition
         unavailable_colors = {G.nodes[n].get('group', -1) for n in opposing_partition}
-        print(f'Unavailable colors: {unavailable_colors}')
-        # color = min(available_colors, key=lambda c: c not in unavailable_colors)
 
         color = -1
         for c in available_colors:
@@ -60,7 +53,6 @@ def cbip(G: nx.Graph) -> nx.Graph:
 
         # Color node
         G.nodes[node]['group'] = color
-        print(f'Color: {color}\n')
 
     # return colors as dict
     return {i: G.nodes[i]['group'] for i in G.nodes()}

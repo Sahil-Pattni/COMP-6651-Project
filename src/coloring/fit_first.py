@@ -24,7 +24,6 @@ def fit_first(G: nx.Graph) -> nx.Graph:
         if 'group' in G.nodes[node]:
             continue
 
-        print(f'Node {node}')
         # Find the colors of neighboring nodes
         neighbor_colors = set(
             G.nodes[n]['group'] for n in G.neighbors(node) if 'group' in G.nodes[n]
@@ -34,10 +33,7 @@ def fit_first(G: nx.Graph) -> nx.Graph:
         for color in range(len(G)):
             if color not in neighbor_colors:
                 G.nodes[node]['group'] = color
-                print(f'Color chosen: {color}')
                 break
-        
-        print()
 
     # Get colors as dict
     colors = {i: G.nodes[i]['group'] for i in G.nodes()}
