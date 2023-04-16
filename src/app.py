@@ -51,12 +51,12 @@ def show_graph(step: int) -> None:
         st.write(f'Step {step:,} | Nodes: {nodes} | Max: {len(st.session_state["G"].nodes)}')
         # Generate subgraph
         _G = st.session_state['G'].subgraph(nodes)
-        # Generate appropriate colorings
-        if st.session_state['option'] == 'FirstFit':
-            _G = fit_first(_G)
-        elif st.session_state['option'] == 'CBIP':
-            # TODO: Implement CBIP
-            pass
+        # # Generate appropriate colorings
+        # if st.session_state['option'] == 'FirstFit':
+        #     _G = fit_first(_G)
+        # elif st.session_state['option'] == 'CBIP':
+        #     # TODO: Implement CBIP
+        #     pass
 
         # Generate pyvis graph
         PG = generate_pyvis_graph(_G, st.session_state['layout'])

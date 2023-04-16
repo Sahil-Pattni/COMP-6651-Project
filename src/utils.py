@@ -64,6 +64,7 @@ def generate_pyvis_graph(_G: nx.Graph, layout: dict ) -> Network:
     PG.force_atlas_2based()
     # Disable physics
     PG.toggle_physics(False)
+    print(type(_G))
     # Add nodes
     PG.from_nx(_G)
 
