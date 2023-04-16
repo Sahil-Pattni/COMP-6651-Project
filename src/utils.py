@@ -69,3 +69,40 @@ def generate_pyvis_graph(_G: nx.Graph, layout: dict ) -> Network:
         node["x"] = layout[node["id"]][0]
         node["y"] = layout[node["id"]][1]
     return PG
+
+
+def example_graph() -> nx.Graph:
+    """
+    Generates the example graph as specified
+    in the project documentation.
+    """
+    G = nx.Graph()
+    for i in range(10):
+        G.add_node(i, label=f'Node {i}')
+
+    G.add_edge(0, 3)
+    G.add_edge(0, 5)
+    G.add_edge(0, 7)
+    G.add_edge(0, 9)
+
+    G.add_edge(2,1)
+    G.add_edge(2,5)
+    G.add_edge(2,7)
+    G.add_edge(2,9)
+
+    G.add_edge(4,1)
+    G.add_edge(4,3)
+    G.add_edge(4,7)
+    G.add_edge(4,9)
+
+    G.add_edge(6,1)
+    G.add_edge(6,3)
+    G.add_edge(6,5)
+    G.add_edge(6,9)
+
+    G.add_edge(8,1)
+    G.add_edge(8,3)
+    G.add_edge(8,5)
+    G.add_edge(8,7)
+
+    return G

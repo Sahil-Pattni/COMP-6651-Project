@@ -7,7 +7,7 @@ import networkx as nx
 from pyvis.network import Network
 from coloring.fit_first import fit_first
 from coloring.CBIP import cbip
-from utils import generate_k_colorable_graph, generate_pyvis_graph
+from utils import generate_k_colorable_graph, generate_pyvis_graph, example_graph
 import numpy as np
 # %%
 # Set config
@@ -30,6 +30,10 @@ if 'df' not in st.session_state:
 if 'option' not in st.session_state:
     st.session_state['option'] = 'FirstFit'
 
+if 'graph_option' not in st.session_state:
+    # Alternative: 'Example Graph'
+    st.session_state['graph_option'] = 'Generate Graph'
+
 for char in ['k', 'n', 'e', 'p']:
     if char not in st.session_state:
         st.session_state[char] = 0
@@ -43,6 +47,15 @@ container = placeholder.container()
 # Heading
 st.sidebar.title("Graph Generator")
 # Set options 
+
+# Option to select the graph generation method
+graph_option = st.sidebar.selectbox(
+    "Graph Generation Method",
+    ("Generate Graph", "Example Graph")
+)
+st.session_state['graph_option'] = graph_option
+
+
 # Option to select the online coloring method
 option = st.sidebar.selectbox(
     "Online Coloring Method",
@@ -80,11 +93,14 @@ if st.sidebar.button("Generate Graph"):
 
         for i in range(N):
             # Generate graph
-            G = generate_k_colorable_graph(
-                st.session_state['k'],
-                st.session_state['n'],
-                st.session_state['p']
-            )
+            if st.session_state['graph_option'] == 'Generate Graph':
+                G = generate_k_colorable_graph(
+                    st.session_state['k'],
+                    st.session_state['n'],
+                    st.session_state['p']
+                )
+            else:
+                G = example_graph()
 
             color_fn = fit_first if st.session_state['option'] == 'FirstFit' else cbip
             
