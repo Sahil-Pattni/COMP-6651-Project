@@ -1,5 +1,6 @@
 # %%
 from matplotlib import pyplot as plt
+from coloring.fit_first import fit_first
 from utils import generate_pyvis_graph, generate_k_colorable_graph
 import networkx as nx
 import numpy as np
@@ -43,20 +44,9 @@ G.add_edge(8,5)
 G.add_edge(8,7)
 
 # %%
-for i in range(len(G.nodes)+1):
-    try:
-        partitions = get_partitions(G.subgraph(range(i)), k=2)
-        print(f'N: {i}: {partitions}')
-        layout = nx.bipartite_layout(G, nx.bipartite.sets(G)[0])
-        nx.draw(G.subgraph(range(i)), layout, with_labels=True)
-        plt.show()
-    except Exception as e:
-        print(f'E: {i}: {e}')
-# %%
-n = 10
-
-# %%
-
-# %%
+for idx in range(len(G.nodes)+1):
+    subgraph = G.subgraph(range(idx))
+    colors = fit_first(subgraph)
+    print(f'Colors for {idx} nodes: {colors}')
 
 # %%
