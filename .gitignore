@@ -4,4 +4,4 @@ lib/
 html/*.html
 *.feather
 *.ftr
-images/
+.DS_Store
