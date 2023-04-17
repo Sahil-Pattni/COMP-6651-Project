@@ -11,6 +11,9 @@ This project is an empirical study of the average competitive ratio using both t
 
 ## Running the Project
 All experiements may be run [from the web application here](https://sahil-pattni-comp-6651-project-srcapp-6hpg5f.streamlit.app).
+
+```NOTE: This web application is hosted on Streamlit Community Cloud, which will be undergoing scheduled maintenance on April 18 and April 20, 2023 between 8 a.m. and 12 p.m. GMT.```
+
 The web application is hosted on Streamlit Sharing, which may take a few minutes to load if the application has not been used recently. The sidebar on the left contains the controls for the application, and has the following options:
 - `Graph Generation Method`: `Generate Graph` to generate a random k-colorable graph, or `Example Graph` to use the example bipartite graph shown in the project description.
 - `Online Coloring Method`: `FitFirst` to use the FitFirst algorithm, or `CBIP` to use the CBIP algorithm.
