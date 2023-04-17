@@ -1,7 +1,6 @@
 import networkx as nx
 
-
-def get_partitions(G, k=2):
+def get_partitions_deprecated(G, k=2):
     coloring = nx.algorithms.coloring.greedy_color(G, strategy='largest_first', interchange=True)
     # group the vertices by color to obtain a k-partition
     partition = {i: [v for v in G.nodes() if coloring[v] == i] for i in range(k)}
@@ -9,7 +8,33 @@ def get_partitions(G, k=2):
     return partition
 
 
-def cbip(G: nx.Graph) -> nx.Graph:
+def get_partitions(G):
+    try:
+        return nx.bipartite.sets(G)
+    except:
+        res = [c for c in nx.connected_components(G)]
+        if len(res) == 0:
+            return set(), set()
+        if len(res) == 2:
+            return res[0], res[1]
+        elif len(res) == 3:
+            res[0].update(res[1])
+            return res[0], res[2]
+        else:
+            raise Exception('Not bipartite')
+
+def partition(G):
+    part_one, part_two = set(), set()
+    for node in G.nodes:
+        # If node has neighbors in part_one, add to part_two
+        if len(part_one.intersection(G.neighbors(node))) > 0:
+            part_two.add(node)
+        else:
+            part_one.add(node)
+    return part_one, part_two
+
+
+def cbip(G: nx.Graph, partition_fn=partition) -> nx.Graph:
     """
     Apply the CBIP algorithm to a graph.
     Assigns a `group` attribute to each node.
@@ -30,7 +55,10 @@ def cbip(G: nx.Graph) -> nx.Graph:
         Colored graph.
     """
     # Bipartite graph
-    partitions =  get_partitions(G)
+    try:
+        partitions = nx.bipartite.kernighan_lin_bisection(G)
+    except:
+        partitions =  partition_fn(G)
 
     nodes = list(G.nodes())
     available_colors = list(range(len(G)+1))
