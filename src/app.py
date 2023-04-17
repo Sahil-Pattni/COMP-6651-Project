@@ -51,7 +51,7 @@ st.sidebar.title("Graph Generator")
 # Option to select the graph generation method
 graph_option = st.sidebar.selectbox(
     "Graph Generation Method",
-    ("Generate Graph", "Example Graph")
+    ("Generate Graph", "Example Graph", "Random Bipartite Graph")
 )
 st.session_state['graph_option'] = graph_option
 
@@ -98,6 +98,13 @@ if st.sidebar.button("Generate Graph"):
                     st.session_state['k'],
                     st.session_state['n'],
                     st.session_state['p']
+                )
+            elif st.session_state['graph_option'] == 'Random Bipartite Graph':
+                G = nx.bipartite.random_graph(
+                    st.session_state['n']//2,
+                    st.session_state['n']//2,
+                    st.session_state['p'],
+                    seed=None
                 )
             else:
                 G = example_graph()
